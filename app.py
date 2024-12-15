@@ -36,6 +36,7 @@ def main():
     # Create an article
     cursor.execute('INSERT INTO articles (title, content, author_id, magazine_id) VALUES (?, ?, ?, ?)',
                    (article_title, article_content, author_id, magazine_id))
+    article_id = cursor.lastrowid
 
     conn.commit()
 
@@ -43,28 +44,41 @@ def main():
     # The following fetch functionality should probably be in their respective models
 
     cursor.execute('SELECT * FROM magazines')
-    magazines = cursor.fetchall()
+    magazines = [Magazine(magazine["id"], magazine["name"], magazine["category"]) for magazine in cursor.fetchall()]
 
     cursor.execute('SELECT * FROM authors')
-    authors = cursor.fetchall()
+    authors = [Author(author["id"], author["name"]) for author in cursor.fetchall()]
 
     cursor.execute('SELECT * FROM articles')
-    articles = cursor.fetchall()
+    articles = [Article(article["id"], article["title"], article["content"], article["author_id"], article["magazine_id"]) for article in cursor.fetchall()]
+
 
     conn.close()
 
     # Display results
     print("\nMagazines:")
     for magazine in magazines:
-        print(Magazine(magazine["id"], magazine["name"], magazine["category"]))
+        print(magazine)
+        # Test article_titles() method
+        print("Article Titles:", magazine.article_titles())
+        # Test contributing_authors() method
+        contributors = magazine.contributing_authors()
+        if contributors:
+            print("Contributing Authors:", [str(author) for author in contributors])
+        else:
+            print("No contributing authors with more than 2 articles.")
 
     print("\nAuthors:")
     for author in authors:
-        print(Author(author["id"], author["name"]))
+        print(author)
+         # Test articles() method
+        print("Articles by Author:", [str(article) for article in author.articles()])
+         # Test magazines() method
+        print("Magazines by Author:", [str(magazine) for magazine in author.magazines()])
 
     print("\nArticles:")
     for article in articles:
-        print(Article(article["id"], article["title"], article["content"], article["author_id"], article["magazine_id"]))
+        print(article)
 
 if __name__ == "__main__":
     main()
